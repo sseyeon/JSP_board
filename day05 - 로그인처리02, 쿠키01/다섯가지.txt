@@ -1,0 +1,5 @@
+Directive	: 지시자		<%@ page import="java.util.Calendar" %>
+Declaration	: 선언부		<%! 변수 및 메서드 선언 %>
+Scriptlet	: 스크립틀릿	<% 일반 자바코드 실행, 메서드 호출>
+Expression	: 표현식		<%= 값 출력%>
+JSP Action Tag	: 액션 태그	<jsp:*** />
