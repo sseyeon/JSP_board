@@ -1,0 +1,89 @@
+﻿
+	DBCP 및 DAO, VO 설정하기
+
+
+
+DBCP : 데이터베이스 커넥션 풀
+
+	Connection 객체를 통해 DB에 접근하는 구조 상 페이지 마다, 혹은 요청이 발생할 때 마다 객체를 새로 생성해야하는데
+	DB서버와 WAS서버가 서로 멀리 있다고 가정하면 굉장히 비효율적인 작업이 된다
+	따라서 ArrayList 혹은 Vector를 활용하여
+	2개의 ArrayList를 만들어서 한 곳은 사용중인 커넥션 객체를 담고, 다른 한 곳은 쉬고 있는 커넥션 객체를 담는 방식으로
+	객체를 새로 생성하지 않고 돌려쓰는 방식을 사용할 수 있다
+	이런 방식을 커넥션 풀이라고 하며, 직접 클래스를 작성하여 사용할 수도 있으나
+	Tomcat에서 제공하는 dbcp를 사용할 수 있다
+	
+
+
+1. 프로젝트의 WebContent/META-INF/Context.xml 작성
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<Context>
+	    <Resource
+	    name="jdbc/oracle"
+	    auth="Container"
+	    type="javax.sql.DataSource"
+	    driverClassName="oracle.jdbc.driver.OracleDriver"
+	    url="jdbc:oracle:thin:@localhost:1521:xe"
+	    username="scott"
+	    password="tiger"
+	    maxActive="20"
+	    maxIdle="10"
+	    maxWait="-1"/>
+	</Context>
+
+
+2. 프로젝트의 WebContent/WEB-INF/web.xml 작성
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<resource-ref>
+		<description>ConnectionPool</description>
+		<res-ref-name>jdbc/oracle</res-ref-name>
+		<res-type>javax.sql.DataSource</res-type>
+		<res-auth>Container</res-auth>
+	</resource-ref>
+
+
+3. tomcat-dbcp.jar 파일을 프로젝트의 WebContent/WEB-INF/lib에 복사
+
+
+4. VO (Value Object : 값을 저장하는 객체, DTO라고도 한다) 클래스 작성하기 
+	DB의 컬럼(필드)이름과 1:1 매칭되는 Java Beans 클래스
+
+
+5. DAO (Data Access Object : 데이터베이스에 접근하여 데이터를 가져오거나 DB에 전달하는 객체) 클래스 작성하기
+
+	MemberDAO.java 
+	- 생성자를 작성하여 객체 생성 즉시 DB와 연결을 시도하도록 한다
+
+import java.sql.*;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+
+public class MemberDAO {
+	private Connection conn;
+	private Context init;
+	private DataSource ds;
+	private String sql;
+	
+	public MemberDAO() {
+		try {
+			init = (Context) new InitialContext();
+			ds = (DataSource)init.lookup("java:comp/env/jdbc/oracle");
+			
+		}catch(Exception e) {
+			System.out.println("Exception : " + e);
+		}finally {
+			if(conn !=null) try {conn.close();}catch(Exception e) {}
+		}
+	}	
+	// 여기부터는 select, insert, update, delete 에 맞게끔 메서드를 작성한다
+}
+
+
+6. ID를 검색하여 DB에서 해당 회원의 정보를 출력하는 test.jsp 작성하기
+
+
+

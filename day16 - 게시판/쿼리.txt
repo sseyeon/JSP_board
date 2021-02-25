@@ -1,0 +1,6 @@
+	
+// select max(rownum) from board
+// select max(num) from board 
+// select writer from board 
+// select writer from board where 1<=num abd num<=5
+// select writer, num from board where 1<=rownum and rownum<=10
